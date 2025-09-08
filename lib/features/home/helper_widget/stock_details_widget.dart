@@ -67,7 +67,7 @@ class StockDetailsWidget extends StatelessWidget {
                   children: [
                     Expanded(
                       child: StockDetailsHelperListTile(
-                        name: "Home:",
+                        name: "High:",
                         value: recentlyViewedStockModel.todaysHighPrice
                             .toStringAsFixed(2)
                             .toString(),

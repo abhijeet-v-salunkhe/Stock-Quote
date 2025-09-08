@@ -2,11 +2,14 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+
+import '../../env.dart';
 
 class ApiClient {
   static late String baseUrl;
-  static String apiKey = "*********************************";
+  static String apiKey = Env.apiKey;
 
   ApiClient._internal() {
     baseUrl = "https://finnhub.io/api/v1";
