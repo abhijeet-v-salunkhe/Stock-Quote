@@ -43,8 +43,8 @@ class SearchStocksScreen extends StatelessWidget {
                         shrinkWrap: true,
                         itemCount: 10,
                         itemBuilder: (context, index) => ShimmerEffect(
-                          containerHeight: 60.h,
-                          containerWidth: 50.w,
+                          containerHeight: 75.h,
+                          containerWidth: double.infinity,
                         ),
                       ),
                     )

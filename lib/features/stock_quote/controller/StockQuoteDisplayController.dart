@@ -3,7 +3,9 @@ import 'dart:developer';
 import 'package:get/get.dart';
 import 'package:stock_quote/core/common/services/shared_preferences_service.dart';
 import 'package:stock_quote/core/constants/constants.dart';
+import 'package:stock_quote/core/constants/enums.dart';
 import 'package:stock_quote/features/search/model/searched_company_model.dart';
+import 'package:stock_quote/features/stock_quote/model/chart_points_model.dart';
 import 'package:stock_quote/features/stock_quote/model/stock_quote_model.dart';
 
 import '../../../core/common/repository.dart';
@@ -19,8 +21,12 @@ class StockQuoteDisplayController extends GetxController {
   final String companyDescription;
 
   bool isLoading = true;
+  bool isChartLoading = true;
   StockQuoteModel? stockQuoteModel;
   late bool isPresentInWishList;
+  ChartPointsModel? chartPointsModel;
+
+  int? stockPresentIndexInWatchList;
 
   @override
   void onInit() async {
@@ -29,6 +35,7 @@ class StockQuoteDisplayController extends GetxController {
     isPresentInWishList = await isPresentInWishlist();
     log("isPresentInWishList : $isPresentInWishList");
     await getStockQuote();
+    await getChartData();
   }
 
   @override
@@ -116,6 +123,60 @@ class StockQuoteDisplayController extends GetxController {
     descriptionKey: companyDescription,
   };
 
+  get dataOfQuote => {
+    symbolKey: companySymbol,
+    descriptionKey: companyDescription,
+    currentPrice: stockQuoteModel!.currentPrice,
+    changedPrice: stockQuoteModel!.changeInPrice,
+    changeInPercentage: stockQuoteModel!.changePercent,
+    todaysHigh: stockQuoteModel!.todaysHigh,
+    todaysLow: stockQuoteModel!.todaysLow,
+    openedPrice: stockQuoteModel!.openingPrice,
+    previousClose: stockQuoteModel!.previousClose,
+    dateTime: stockQuoteModel!.dataTiming,
+  };
+
+  bool checkPresenceInRecentlyViewed(List<dynamic> recentlyViewed) {
+    int i = 0;
+    for (dynamic value in recentlyViewed) {
+      if (value[symbolKey] == companySymbol) {
+        stockPresentIndexInWatchList = i;
+        return true;
+      }
+      i += 1;
+    }
+    return false;
+  }
+
+  Future<void> getChartData() async {
+    isChartLoading = true;
+    update();
+    try {
+      var result = await Repository.getMethod(
+        endPoint: "/query",
+        query:
+            "function=TIME_SERIES_DAILY&symbol=$companySymbol&outputsize=compact",
+        apiUse: ApiUse.alphaVantage,
+      );
+      log("AlphaVantage repsonse : $result");
+
+      chartPointsModel = ChartPointsModel.fromJson(
+        result["Time Series (Daily)"],
+      );
+      if (chartPointsModel != null &&
+          chartPointsModel!.dataPointList.isNotEmpty) {
+        log("Chart Data Point : ${chartPointsModel!.dataPointList[1].close}");
+      } else {
+        log("Chart Data Point not parsed");
+      }
+    } catch (e) {
+      log("Exception in getChartData StockQuoteDisplayController : $e");
+    } finally {
+      isChartLoading = false;
+      update();
+    }
+  }
+
   @override
   void onClose() async {
     // TODO: implement dispose
@@ -134,39 +195,30 @@ class StockQuoteDisplayController extends GetxController {
       if (!presenceInRecentlyViewed) {
         if (recentlyViewed.length > 4) {
           recentlyViewed.removeAt(0);
-          recentlyViewed.add(dataOfQuote);
+          recentlyViewed.insert(0, dataOfQuote);
           log("recentlyViewed after adding : $recentlyViewed");
         } else {
           recentlyViewed.add(dataOfQuote);
           log("recentlyViewed after adding : $recentlyViewed");
         }
-        await SharedPreferencesService.setListOfMap(
-          recentlyWatchedKey,
-          recentlyViewed,
-        );
+      } else {
+        log("stockPresentIndexInWatchLis : $stockPresentIndexInWatchList ");
+        if (stockPresentIndexInWatchList != null) {
+          log("In if stockPresentIndexInWatchLis");
+          recentlyViewed.removeAt(stockPresentIndexInWatchList!);
+          log(
+            "In if stockPresentIndexInWatchLis recentlyViewed after remove : $recentlyViewed",
+          );
+          recentlyViewed.insert(0, dataOfQuote);
+          log(
+            "In if stockPresentIndexInWatchLis recentlyViewed after add : $recentlyViewed",
+          );
+        }
       }
+      await SharedPreferencesService.setListOfMap(
+        recentlyWatchedKey,
+        recentlyViewed,
+      );
     }
-  }
-
-  get dataOfQuote => {
-    symbolKey: companySymbol,
-    descriptionKey: companyDescription,
-    currentPrice: stockQuoteModel!.currentPrice,
-    changedPrice: stockQuoteModel!.changeInPrice,
-    changeInPercentage: stockQuoteModel!.changePercent,
-    todaysHigh: stockQuoteModel!.todaysHigh,
-    todaysLow: stockQuoteModel!.todaysLow,
-    openedPrice: stockQuoteModel!.openingPrice,
-    previousClose: stockQuoteModel!.previousClose,
-    dateTime: stockQuoteModel!.dataTiming,
-  };
-
-  bool checkPresenceInRecentlyViewed(List<dynamic> recentlyViewed) {
-    for (dynamic value in recentlyViewed) {
-      if (value[symbolKey] == companySymbol) {
-        return true;
-      }
-    }
-    return false;
   }
 }

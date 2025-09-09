@@ -3,15 +3,22 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:stock_quote/core/constants/enums.dart';
 
 import '../network/api_client.dart';
 import 'common_snack_bar.dart';
 
 class Repository {
-  static dynamic getMethod({required String endPoint, String? query}) async {
+  static dynamic getMethod({
+    required String endPoint,
+    String? query,
+    ApiUse? apiUse = ApiUse.finnHub,
+  }) async {
     try {
       final response =
-          await ApiClient().getRequest(endPoint: endPoint, query: query)
+          await ApiClient(
+                apiUse: apiUse!,
+              ).getRequest(endPoint: endPoint, query: query, apiUse: apiUse)
               as http.Response;
       if (response.statusCode == 200) {
         return await json.decode(response.body);

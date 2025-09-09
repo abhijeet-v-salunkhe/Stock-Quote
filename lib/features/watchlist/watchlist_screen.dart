@@ -63,8 +63,8 @@ class WatchlistScreen extends StatelessWidget {
                   shrinkWrap: true,
                   itemCount: 10,
                   itemBuilder: (context, index) => ShimmerEffect(
-                    containerHeight: 60.h,
-                    containerWidth: 50.w,
+                    containerHeight: 90.h,
+                    containerWidth: double.infinity,
                   ),
                 )
               : Center(

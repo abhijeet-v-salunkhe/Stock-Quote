@@ -17,3 +17,8 @@ Color alertColor = Colors.red;
 Color successColor = Color(0xFF10B981);
 Color failureColor = Color(0xFFFD182A);
 Color informationColor = Color(0xFFF6DF59);
+
+// Stock chart colors
+Color stockChartBackgroundColor = Color(0xFF1E1E1E);
+Color belowStockChartLineColor1 = Color(0xFF2C8E0F);
+Color belowStockChartLineColor2 = Color(0xFF60615F);

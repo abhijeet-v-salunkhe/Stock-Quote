@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -30,7 +31,12 @@ class HomeScreen extends StatelessWidget {
               CommonSearchBar(
                 readOnly: true,
                 onTap: () {
-                  Get.toNamed(AppRoutes.searchScreen);
+                  Get.toNamed(AppRoutes.searchScreen)?.then(
+                    (value) => Future.delayed(
+                      Duration(seconds: 1),
+                      () => controller.getRecentlyViewedStocks(),
+                    ),
+                  );
                 },
                 hintText: "Search Stock, e.g. AAPL",
               ),

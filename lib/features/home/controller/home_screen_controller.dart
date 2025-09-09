@@ -19,9 +19,12 @@ class HomeScreenController extends GetxController {
   }
 
   Future<void> getRecentlyViewedStocks() async {
+    log("In getRecentlyViewedStocks in home controller");
     try {
       List<dynamic> recentlyViewedStocksMapData =
           await SharedPreferencesService.getListOfMap(recentlyWatchedKey);
+      log("recentlyViewedStocksMapData : $recentlyViewedStocksMapData");
+
       if (recentlyViewedStocksMapData.isNotEmpty) {
         recentlyViewedStocks = recentlyViewedStocksMapData
             .map((value) => RecentlyViewedStockModel.fromJson(value))
